@@ -1,0 +1,40 @@
+#cloud-config
+
+hostname: <name>
+
+rancher:
+  network:
+    #dns has to be configured still
+    dns:
+      nameservers:
+        - <DNS>
+        - <DNS>
+        - <DNS>
+    #  override: true # Override DHCP assigned nameservers
+    # Assign static IP configuration to interfaces (Default: use DHCP)
+    # Ref: https://rancher.com/docs/os/v1.x/en/installation/networking/interfaces/
+    interfaces:
+      #test if this works with eth*
+      eth0:
+        address: <ADDRESS>
+        gateway: <GATEWAY ADDRESS>
+        dhcp: false
+    # proxy adresses
+    http_proxy: <PROXY ADRESS:PORT>
+    https_proxy: <PROXY ADRESS:PORT>
+
+write_files:
+  # Run all the Docker containers here:
+  - path: /etc/rc.local
+    permissions: "0755"
+    owner: root
+    content: |
+      #!/bin/bash
+      wait-for-docker
+      docker run -d --restart=unless-stopped -p 80:80 -p 443:443 rancher/rancher
+# For production autologin has to be disabled. Only connecthing through SSH is desired
+#  disable:
+#    - autologin
+#  password: Welcome123!
+
+# deze stappen moeten worden ingericht in de cloud-config: https://rancher.com/docs/rancher/v2.x/en/installation/ha/
